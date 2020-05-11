@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Panda测试框架</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        .header{
+            background: #409EFF;
+            text-align: center;
+            color: white;
+            font-size: 32px;
+            line-height: 60px;
+        }
+        .aside {
+            width: 200px;
+            background: white;
+        }
+        .grid-content {
+            border-radius: 4px;
+            min-height: 36px;
+        }
+        .bg-purple-dark {
+            background: #99a9bf;
+        }
+        .bg-purple-light {
+            background: #e5e9f2;
+        }
+        .hiddenMainPanel {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header class="header">Panda测试框架</el-header>
+            <el-container>
+                <el-aside class="aside">
+                    <el-row class="tac">
+                        <el-col :span="24">
+                            <el-menu
+                                    default-active="1"
+                                    class="el-menu-vertical-demo">
+                                <el-menu-item index="1" @click="chooseMenu('interfaceManagement')">
+                                    <i class="el-icon-menu"></i>
+                                    <span slot="title">接口管理</span>
+                                </el-menu-item>
+                                <el-menu-item index="2" @click="chooseMenu('sceneManagement')">
+                                    <i class="el-icon-video-camera"></i>
+                                    <span slot="title">场景管理</span>
+                                </el-menu-item>
+                                <el-menu-item index="3" @click="chooseMenu('sceneTest')">
+                                    <i class="el-icon-video-play"></i>
+                                    <span slot="title">自动化测试</span>
+                                </el-menu-item>
+                            </el-menu>
+                        </el-col>
+                    </el-row>
+                </el-aside>
+                <el-main>
+                    <el-row :class="{hiddenMainPanel:nowMenu != 'interfaceManagement'}">
+                        <el-col :span="24">
+                            <template>
+                                <el-tabs v-model="infMgActiveName">
+                                    <el-tab-pane label="服务管理" name="first">
+                                        <template>
+                                            <el-table
+                                                    :data="serviceTable"
+                                                    border
+                                                    style="width: 100%">
+                                                <el-table-column
+                                                        prop="name"
+                                                        label="服务类名">
+                                                </el-table-column>
+                                                <el-table-column
+                                                        prop="secondName"
+                                                        label="别名">
+                                                </el-table-column>
+                                                <el-table-column
+                                                        prop="comments"
+                                                        label="备注">
+                                                </el-table-column>
+                                                <el-table-column
+                                                        fixed="right"
+                                                        label="操作">
+                                                    <template slot-scope="scope">
+                                                        <el-button type="text" size="middle" @click="editInfClassInfo(scope.row)">编辑</el-button>
+                                                    </template>
+                                                </el-table-column>
+                                            </el-table>
+                                        </template>
+                                    </el-tab-pane>
+                                    <el-tab-pane label="接口管理" name="second">
+                                        <el-row style="height: 40px">
+                                            <el-col :span="12">
+                                                <span style="line-height: 40px">选择服务类:</span>
+                                                <template>
+                                                    <el-select v-model="infMagClassSelected" placeholder="请选择" style="width: 300px;margin-left: 20px" @change="infMagChooseClass()">
+                                                        <el-tooltip v-for="item in serviceTable" class="item" effect="dark" :content="item.secondName" placement="right">
+                                                            <el-option
+                                                                    :key="item.name"
+                                                                    :label="item.name"
+                                                                    :value="item.name">
+                                                            </el-option>
+                                                        </el-tooltip>
+                                                    </el-select>
+                                                </template>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row style="margin-top: 20px">
+                                            <el-col :span="24">
+                                                <template>
+                                                    <el-table
+                                                            :data="interfaceTable"
+                                                            border
+                                                            style="width: 100%">
+                                                        <el-table-column
+                                                                prop="name"
+                                                                label="方法名">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="secondName"
+                                                                label="别名">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="comments"
+                                                                label="备注">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="params"
+                                                                label="参数">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                fixed="right"
+                                                                label="操作">
+                                                            <template slot-scope="scope">
+                                                                <el-button type="text" size="middle" @click="editInfInfo(scope.row)">编辑</el-button>
+                                                            </template>
+                                                        </el-table-column>
+                                                    </el-table>
+                                                </template>
+                                            </el-col>
+                                        </el-row>
+                                    </el-tab-pane>
+                                </el-tabs>
+                            </template>
+                        </el-col>
+                    </el-row>
+                    <el-row :class="{hiddenMainPanel:nowMenu != 'sceneManagement'}">
+                        <el-col :span="24"><div class="grid-content bg-purple-light"></div></el-col>
+                    </el-row>
+                    <el-row :class="{hiddenMainPanel:nowMenu != 'sceneTest'}">
+                        <el-col :span="24"><div class="grid-content bg-purple-light"></div></el-col>
+                    </el-row>
+                </el-main>
+            </el-container>
+        </el-container>
+
+        <el-dialog title="服务类信息修改" :visible.sync="serviceClassInfoEdit">
+            <el-form :model="serviceClassInfoEditData">
+                <el-form-item label="服务类名" label-width="120px">
+                    <el-input v-model="serviceClassInfoEditData.name" autocomplete="off" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="服务别名" label-width="120px">
+                    <el-input v-model="serviceClassInfoEditData.secondName" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="服务备注" label-width="120px">
+                    <el-input v-model="serviceClassInfoEditData.comments" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+        <el-dialog title="接口信息修改" :visible.sync="serviceInfInfoEdit">
+            <el-form :model="serviceInfInfoEditData">
+                <el-form-item label="接口名" label-width="120px">
+                    <el-input v-model="serviceInfInfoEditData.name" autocomplete="off" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="接口别名" label-width="120px">
+                    <el-input v-model="serviceInfInfoEditData.secondName" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="接口备注" label-width="120px">
+                    <el-input v-model="serviceInfInfoEditData.comments" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="接口参数" label-width="120px">
+                    <el-input v-model="serviceInfInfoEditData.params" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+    </div>
+</body>
+
+<script>
+    let k = new Vue({
+        el: "#app",
+        data: {
+            nowMenu: "interfaceManagement",
+            infMgActiveName: 'second',
+            serviceClassInfoEdit: false,
+            serviceInfInfoEdit: false,
+            serviceTable: [
+                {
+                    name: "IRimRoomService1",
+                    secondName: "招聘方IM中台房间服务1",
+                    comments: "关于招聘方视频房间相关功能1",
+                    interfaces: [
+                        {
+                            name: "enterRoom",
+                            secondName: "进入房间",
+                            comments: "用户进入房间后客户端回调这个接口",
+                            params: ""
+                        }
+                    ]
+                },{
+                    name: "IRimRoomService2",
+                    secondName: "招聘方IM中台房间服务2",
+                    comments: "关于招聘方视频房间相关功能2",
+                    interfaces: [
+
+                    ]
+                },{
+                    name: "IRimRoomService3",
+                    secondName: "招聘方IM中台房间服务3",
+                    comments: "关于招聘方视频房间相关功能3",
+                    interfaces: [
+
+                    ]
+                }
+            ],
+            interfaceTable: [],
+            infMagClassSelected: "",
+            serviceClassInfoEditData: {},
+            serviceInfInfoEditData: {}
+        },
+        methods: {
+            chooseMenu: function (menu) {
+                this.nowMenu = menu;
+            },
+            editInfClassInfo(row) {
+                this.serviceClassInfoEditData = row;
+                this.serviceClassInfoEdit = true;
+            },
+            editInfInfo(row) {
+                this.serviceInfInfoEditData = row;
+                this.serviceInfInfoEdit = true;
+            },
+            infMagChooseClass: function () {
+                for (let i = 0 ; i < this.serviceTable.length ; i ++) {
+                    if (this.serviceTable[i].name == this.infMagClassSelected) {
+                        this.interfaceTable = this.serviceTable[i].interfaces;
+                        return;
+                    }
+                }
+            }
+        },
+        computed: {},
+        created: () => {
+
+        }
+    });
+</script>
+</html>
