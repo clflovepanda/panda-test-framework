@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Panda测试框架</title>
+    <title>Panda测试框架 V2.0</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.js"></script>
     <!-- 引入样式 -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
@@ -42,7 +42,7 @@
 <body>
     <div id="app">
         <el-container>
-            <el-header class="header">Panda测试框架</el-header>
+            <el-header class="header">Panda测试框架 V2.0</el-header>
             <el-container>
                 <el-aside class="aside">
                     <el-row class="tac">
@@ -156,15 +156,140 @@
                         </el-col>
                     </el-row>
                     <el-row :class="{hiddenMainPanel:nowMenu != 'sceneManagement'}">
-                        <el-col :span="24"><div class="grid-content bg-purple-light"></div></el-col>
+                        <el-col :span="24">
+                            <template>
+                                <el-tabs v-model="sceneMgActiveName">
+                                    <el-tab-pane label="模块管理" name="first">
+                                        <el-row>
+                                            <el-col :span="24">
+                                                <el-button type="success" @click="sceneModuleCreate = true">新建模块</el-button>
+                                                <el-divider></el-divider>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row style="margin-top: 10px">
+                                            <el-col :span="24">
+                                                <template>
+                                                    <el-table
+                                                            :data="sceneModuleTable"
+                                                            border
+                                                            style="width: 100%">
+                                                        <el-table-column
+                                                                prop="name"
+                                                                label="模块名">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="comments"
+                                                                label="备注">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                fixed="right"
+                                                                label="操作">
+                                                            <template slot-scope="scope">
+                                                                <el-button type="text" size="middle" @click="editSceneModule(scope.row)">编辑</el-button>
+                                                                <el-button type="text" size="middle" @click="deleteSceneModule(scope.row)">删除</el-button>
+                                                            </template>
+                                                        </el-table-column>
+                                                    </el-table>
+                                                </template>
+                                            </el-col>
+                                        </el-row>
+                                    </el-tab-pane>
+                                    <el-tab-pane label="场景管理" name="second">
+                                        <el-row type="flex" justify="space-between">
+                                            <el-col :span="12">
+                                                <span style="line-height: 40px">选择模块:</span>
+                                                <template>
+                                                    <el-select v-model="sceneModuleSelected" placeholder="请选择" style="width: 300px;margin-left: 20px" @change="sceneModuleChoose()">
+                                                        <el-tooltip v-for="item in sceneModuleTable" class="item" effect="dark" :content="item.comments" placement="right">
+                                                            <el-option
+                                                                    :key="item.name"
+                                                                    :label="item.name"
+                                                                    :value="item.name">
+                                                            </el-option>
+                                                        </el-tooltip>
+                                                    </el-select>
+                                                </template>
+                                            </el-col>
+                                            <el-col :span="4">
+                                                <el-button type="success" @click="sceneModuleCreate = true" style="float: right">新建场景</el-button>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="24">
+                                                <el-divider></el-divider>
+                                            </el-col>
+                                        </el-row>
+                                        <el-row>
+                                            <el-col :span="24">
+                                                <template>
+                                                    <el-table
+                                                            :data="sceneTable"
+                                                            border
+                                                            style="width: 100%">
+                                                        <el-table-column
+                                                                prop="name"
+                                                                label="场景名">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="moduleName"
+                                                                label="模块名">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                prop="comments"
+                                                                label="备注">
+                                                        </el-table-column>
+                                                        <el-table-column
+                                                                fixed="right"
+                                                                label="操作">
+                                                            <template slot-scope="scope">
+                                                                <el-button type="text" size="middle" @click="serviceSort(scope.row)">服务编排</el-button>
+                                                                <el-button type="text" size="middle" @click="editScene(scope.row)">编辑</el-button>
+                                                                <el-button type="text" size="middle" @click="deleteScene(scope.row)">删除</el-button>
+                                                            </template>
+                                                        </el-table-column>
+                                                    </el-table>
+                                                </template>
+                                            </el-col>
+                                        </el-row>
+                                    </el-tab-pane>
+                                </el-tabs>
+                            </template>
+                        </el-col>
                     </el-row>
                     <el-row :class="{hiddenMainPanel:nowMenu != 'sceneTest'}">
-                        <el-col :span="24"><div class="grid-content bg-purple-light"></div></el-col>
+                        <el-col :span="24">
+                            <div class="grid-content bg-purple-light">
+
+                            </div>
+                        </el-col>
                     </el-row>
                 </el-main>
             </el-container>
         </el-container>
 
+        <el-dialog title="编辑模块" :visible.sync="sceneModuleEdit" >
+            <el-form :model="sceneModuleEditDate">
+                <el-form-item label="模块名" label-width="120px" prop="name">
+                    <el-input v-model="sceneModuleEditDate.name" autocomplete="off" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="模块备注" label-width="120px" prop="comments">
+                    <el-input v-model="sceneModuleEditDate.comments" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+        <el-dialog title="新建模块" :visible.sync="sceneModuleCreate" @closed="resetForm('sceneModuleCreateData')">
+            <el-form :model="sceneModuleCreateData"  ref="sceneModuleCreateData">
+                <el-form-item label="模块名" label-width="120px" prop="name">
+                    <el-input v-model="sceneModuleCreateData.name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="模块备注" label-width="120px" prop="comments">
+                    <el-input v-model="sceneModuleCreateData.comments" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="createSceneModule">创 建</el-button>
+            </span>
+        </el-dialog>
         <el-dialog title="服务类信息修改" :visible.sync="serviceClassInfoEdit">
             <el-form :model="serviceClassInfoEditData">
                 <el-form-item label="服务类名" label-width="120px">
@@ -202,9 +327,12 @@
         el: "#app",
         data: {
             nowMenu: "interfaceManagement",
-            infMgActiveName: 'second',
-            serviceClassInfoEdit: false,
-            serviceInfInfoEdit: false,
+            infMgActiveName: 'first',
+            sceneMgActiveName: 'first',
+            serviceClassInfoEdit: false, // 服务类编辑窗口
+            serviceInfInfoEdit: false, // 服务接口编辑窗口
+            sceneModuleCreate: false, // 场景模块编辑窗口
+            sceneModuleEdit: false,
             serviceTable: [
                 {
                     name: "IRimRoomService1",
@@ -235,9 +363,31 @@
                 }
             ],
             interfaceTable: [],
-            infMagClassSelected: "",
-            serviceClassInfoEditData: {},
-            serviceInfInfoEditData: {}
+            sceneModuleTable:[
+                {
+                    name: "Panda测试模块",
+                    comments: "一块只属于Panda的测试模块",
+                    scenes: [
+                        {
+                            name: "语音通话主流程",
+                            moduleName: "Panda测试模块",
+                            comments: "语音通话的一般正确流程",
+                            detail: {}
+                        }
+                    ]
+                },
+                {
+                    name: "Panda测试模块2",
+                    comments: "一块只属于Panda的测试模块2"
+                }
+            ],
+            sceneTable: [],
+            sceneModuleSelected: "",
+            infMagClassSelected: "", //接口管理面板，选择的类
+            serviceClassInfoEditData: {}, //服务类编辑临时数据
+            serviceInfInfoEditData: {}, //接口编辑临时数据
+            sceneModuleCreateData: {}, //场景模块创建临时数据
+            sceneModuleEditDate: {}
         },
         methods: {
             chooseMenu: function (menu) {
@@ -251,16 +401,69 @@
                 this.serviceInfInfoEditData = row;
                 this.serviceInfInfoEdit = true;
             },
-            infMagChooseClass: function () {
+            infMagChooseClass: function () { //类管理页面选择类别
                 for (let i = 0 ; i < this.serviceTable.length ; i ++) {
                     if (this.serviceTable[i].name == this.infMagClassSelected) {
                         this.interfaceTable = this.serviceTable[i].interfaces;
                         return;
                     }
                 }
+            },
+            createSceneModule: function () {//创建场景模块
+                //检查模块是否存在重复
+                let flag = false;
+                this.sceneModuleTable.forEach((ele, index) => {
+                    if (ele.name == this.sceneModuleCreateData.name) {
+                        this.$message.error('模块名重复');
+                        flag = true;
+                        return;
+                    }
+                });
+                if (flag) {
+                    return;
+                }
+                let temp = {
+                    name: this.sceneModuleCreateData.name,
+                    comments: this.sceneModuleCreateData.comments
+                };
+                this.sceneModuleTable.push(temp);
+                this.$message({
+                    message: '创建成功',
+                    type: 'success'
+                });
+                this.sceneModuleCreate = false;
+            },
+            editSceneModule(row) {
+                this.sceneModuleEditDate = row;
+                this.sceneModuleEdit = true;
+            },
+            deleteSceneModule(row) {
+                this.$alert('当前操作会删除当前模块下的所有场景。确认要删除这条数据吗？', '注意', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+                        this.sceneModuleTable.splice(this.sceneModuleTable.indexOf(row), 1);
+                        this.$message({
+                            type: 'success',
+                            message: '删除成功'
+                        });
+                    }
+                });
+
+            },
+            sceneModuleChoose: function () { // 场景管理页面，选择模块
+                for (let i = 0 ; i < this.sceneModuleTable.length ; i ++) {
+                    if (this.sceneModuleTable[i].name == this.sceneModuleSelected) {
+                        this.sceneTable = this.sceneModuleTable[i].scenes;
+                        return;
+                    }
+                }
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
             }
         },
-        computed: {},
+        computed: {
+        },
         created: () => {
 
         }
